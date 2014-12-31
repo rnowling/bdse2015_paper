@@ -354,7 +354,7 @@
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Adding Local Weather Simulation to the BigPetStore Data Generator for the JVM}
+\title{Adding Geospatial Patterns to the BigPetStore Data Generator with a Local Weather Model}
 
 % author names and affiliations
 % use a multiple column layout for up to three different
@@ -519,27 +519,27 @@ Once a product has been chosen, the customer's inventory is updated and the exha
 
 
 \section{Improvements to the Data Generator}
-\subsection{Products}
-The original data generator relied on a hand-generated JSON document containing product descriptions.  Due to the labor requirements, only a handful of products were available in each category with only 3-4 fields per category. To increase the number and variety of purchasing patterns in the model, a product enumerator was implemented.  Given a set of fields and possible values, the enumerator generates all combinations of products.
+%\subsection{Products}
+%The original data generator relied on a hand-generated JSON document containing product descriptions.  Due to the labor requirements, only a handful of products were available in each category with only 3-4 fields per category. To increase the number and variety of purchasing patterns in the model, a product enumerator was implemented.  Given a set of fields and possible values, the enumerator generates all combinations of products.
 
-Rules are used to filter out unwanted combinations of field values.  For example, the fictional brand of dog food ``Chef Corgi'' might be targeted towards budget-oriented consumers.  As such, the brands' products might exclude expensive ingredients and marketing (salmon, organic ingredients, etc.).  Products that do not satisfy the filters are removed from the list of possible products.
+%Rules are used to filter out unwanted combinations of field values.  For example, the fictional brand of dog food ``Chef Corgi'' might be targeted towards budget-oriented consumers.  As such, the brands' products might exclude expensive ingredients and marketing (salmon, organic ingredients, etc.).  Products that do not satisfy the filters are removed from the list of possible products.
 
-Using the product enumerator, the number of products across four categories has been increased from \textcolor{red}{40 to over 3,000, and the number of fields has increased from 3-4 to upwards of 10 per category}.
+%Using the product enumerator, the number of products across four categories has been increased from \textcolor{red}{40 to over 3,000, and the number of fields has increased from 3-4 to upwards of 10 per category}.
 
-Optional products were introduced.  Examples of optional products include snacks, collars, sweaters, and toys. Exhaustion of optional products does not trigger transactions.  Said another way, the optional products' exhaustion times are not used when proposing transaction times.  There is no distinction between optional and mandatory products when simulating purchases within a transacton.
+%Optional products were introduced.  Examples of optional products include snacks, collars, sweaters, and toys. Exhaustion of optional products does not trigger transactions.  Said another way, the optional products' exhaustion times are not used when proposing transaction times.  There is no distinction between optional and mandatory products when simulating purchases within a transacton.
 
-\textcolor{red}{weather-triggered or seasonal products. product PDFs?}
+%\textcolor{red}{weather-triggered or seasonal products. product PDFs?}
 
-\subsection{Customer and Transaction Stores}
-In the data generator prototype, the store for each each transaction was picked uniformally from the set of all stores.  To improve realism and support the incorporation of geospatial patterns, each customer is now associated with a specific store and all of a customer's transactions occur at that store.
+\subsection{Association of Customers and Transactions with Stores}
+In the data generator prototype, the store for each each transaction was picked uniformally from the set of all stores.  To improve upon the realism and support the incorporation of geospatial patterns, each customer is now associated with a specific store and all of a customer's transactions occur at that store.
 
-Customers' associated stores are sampled from a PMF with weights proportionally to population of each stores' zip code.  The model for sampling the customers' locations was updated so that each zip code $z$ is weighted exponententially according to the distance from the zip code $s$ of the customers' associated store:
+In the new model, a store is sampled for each customer from a PMF with weights proportionally to population of the stores' zip codes.  The customers' locations are sampled from a PMF exponentially-distributed weights for each zip code $z$ according to the distance between the zip code $s$ of the customers' associated store:
 
 \begin{equation}
 w(s, z) = \lambda \exp(-\lambda d(s, z))
 \end{equation}
 
-where $\lambda$ is the inverse desired average distance.
+where $\lambda$ is the inverse of the desired average distance.
 
 \subsection{Weather Model}
 
@@ -576,7 +576,6 @@ The daily average wind speed for each region is modeled using a first-order Four
 
 The average temperature $a_0$, $a_1$, $a_2$, inverse daily average precipitation $\lambda$, average daily wind speed $b_0$, $b_1$, $b_2$, $k$, and $\theta$ are \textcolor{red}{fit to the observed data (how?)} from NOAA QCLCD for each zip code.  The damping coefficient $\gamma$ is determined empirically.
 
-Three years of observed daily average temperature, total precipitation, and average wind speed from the NOAA QCLCD data for South Bend, IN from October 2011 to September 2014 are shown in Figure~\ref{fig:weather_model} alongside simulated data from the model.  The simulated data is able to produce temporal and stationary patterns similar to those of the real data.
 
 From the temperature, precipitation and wind speed, the snowfall ($S(t)$, in), rainfall ($R(T)$, in), and wind chill ($C(T)$, $^\circ$F) \textcolor{red}{cite} are calculated as follows:
 
@@ -596,6 +595,30 @@ The snowfall, rainfall, and wind chill are used as input to a conditional probab
 \begin{equation}
 P(\text{trans}|t, S(T), R(T), C(T)) = \dots
 \end{equation}
+
+\subsection{Java Library Implementation}
+The data generator was originally prototyped in Python \cite{Nowling14}.  Once the utility of the generator was validated, the generator was implemented as a Java library for production usage. Java was chosen for compatibility with popular big data processing systems such as Apache Hadoop \cite{Hadoop} and Apache Spark \cite{Zaharia2010,Zaharia2012} and other JVM languages such as Scala and Clojure.  The Java implementation has ~5,500 lines of code, ~110 classes, and ~90 unit tests.
+
+The library's API is relatively simple with one class for loading input data, five classes for generating data, and six data model classes.  Broad support for multiple parallelization paradigms was a primary design requirement.  Generators interact only through standard Java collections containing serializable objects and are designed to allow multiple instantiated copies to support parallelization.  As such, parallelization is as simple as creating as many independent instances as needed and combining the resulting Java collections before each stage. An example driver implemented with Apache Spark with support for parallel and distributed computing is presented in Section~\ref{sec:spark}.  For development purposes, the library includes a single-threaded command-line driver.
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=3.5in]{figures/bps_flowchart.eps}
+  \caption{BigPetStore Flowchart}
+  \label{fig:bps_flowchart}
+\end{figure}
+
+The source code is available at \url{https://github.com/rnowling/bigpetstore-data-generator} under the Apache Public License v2. Jars are published via \textcolor{red}{\url{bintray}} for easy integration with build systems that support automatic dependency resolution.  
+
+\section{Parallelization with Spark Driver} \label{sec:spark}
+\textcolor{red}{TODO code listing}
+
+\section{Evaluation of the Model}
+To evaluate the changes in the model, we analyzed data for 10 stores, 10,000 customers, and five years of transactions generated from the model. 
+
+\subsection{Comparison of Real and Simulated Weather Data}
+Three years of observed daily average temperature, total precipitation, and average wind speed from the NOAA QCLCD data \textcolor{red}{cite} for South Bend, IN from October 2011 to September 2014 are shown in Figure~\ref{fig:weather-model} alongside simulated data generated from the model. The simulated data is able to produce temporal and stationary patterns similar to those of the real data.
+
 
 \begin{figure*}[!t]
   \centering
@@ -630,37 +653,22 @@ P(\text{trans}|t, S(T), R(T), C(T)) = \dots
   \end{subfigure}
 
   \caption{NOAA QCLCD weather data alongside simulated data for South Bend, IN for October 2011 to September 2014.}
-  \label{fig:weather_model}  
+  \label{fig:weather-model}  
 \end{figure*}
 
-\subsection{Implementation}
-The data generator was previously prototyped in Python.  Once the utility of the generator was validated, a new production implementation of the data generator was implemented and released as a Java library. Java was chosen for compatibility with popular big data processing systems such as Apache Hadoop \textcolor{red}{cite} and Apache Spark \textcolor{red}{cite} and other JVM languages such as Scala and Clojure.  The Java implementation has ~5,500 lines of code, 110 classes, and 90 unit tests.
-
-Users interact with the library through six primary classes (\texttt{DataLoader}, \texttt{StoreGenerator}, \texttt{CustomerGenerator}, \texttt{ProductGenerator}, \texttt{PurchasingProfileGenerator}, and \texttt{TransactionGenerator}) and five data model POJOs (\texttt{InputData}, \texttt{Store}, \texttt{Customer}, \texttt{Product}, and \texttt{Transaction}).  Broad support for multiple parallelization paradigms was a primary design requirement.  Generators interact only through standard Java collections containing serializable POJOs and are designed to support multiple instantiated copies to support parallelization.  As such, parallelization is as simple as creating as many independent instances as needed and combining the resulting Java collections before each stage. An example driver implemented with Apache Spark with support for parallel and distributed computing is presented in Section~\ref{sec:spark}.  For development purposes, the library includes a single-threaded command-line driver.
-
-\begin{figure}[!t]
-  \centering
-  \includegraphics[width=3.5in]{figures/bps_flowchart.eps}
-  \caption{BigPetStore Flowchart}
-  \label{fig:bps_flowchart}
-\end{figure}
-
-The source code is available at \url{https://github.com/rnowling/bigpetstore-data-generator} under the Apache Public License v2. Jars are published via \textcolor{red}{\url{bintray}} for easy integration with build systems that support automatic dependency resolution.  
-
-\section{Parallelization with Spark Driver} \label{sec:spark}
-\textcolor{red}{TODO code listing}
-
-\section{Evaluation of the Model}
-To evaluate the semantic content of the generated data, we performed two example analyses in support of a fictional advertising campaign using data for 10 stores, 10,000 customers, and five years of transactions generated from the model. The analyses were designed to be realistic and driven by real-world business concerns.  Due to limited advertising budgets, businesses need to decide who to target and what sort of advertisements are likely to be effective for each type of customer.  We analyzed data generated from the model to determine where the advertising campaigns should be targeted geographically and identify customer purchasing profiles.
-
 \subsection{Weekly Transaction Counts by Store}
+The weekly transaction counts over five years of simulation for six stores are plotted in Figure~\ref{fig:weekly-trans-counts}.  The variation in the number of transactions by store validates that the model is assigning customers to stores in proportion to the population of the stores' zip codes.  Large fluctuations in the weekly transaction counts occur during winter months, validating that the weather transaction model is capturing the effect of weather on transaction times.
 
-\begin{figure}[!t]
+\begin{figure}[!h]
   \centering
   \includegraphics[width=3.5in]{figures/weather_weekly_transaction_counts.pdf}
   \caption{Stores' Weekly Transaction Counts}
-  \label{fig:cluster_analysis}
+  \label{fig:weekly-trans-counts}
 \end{figure}
+
+\subsection{Impact of Weather on Shopping Patterns by Region}
+
+\textcolor{red}{TODO: effect of weather, variations by region}
 
 \subsection{Customer Segmentation}
 Secondly, we profiled our customers' purchasing habits to optimize the advertising campaign's effectiveness by customizing the advertised products for each customer.  For each customer, we generated a feature vector by computing the frequency with which they would purchase the same brand or flavor from one transaction to the next.  We clustered the customers' feature vectors using the KMeans algorithm with a range of cluster counts. Twenty clusters converged the error.
@@ -675,14 +683,6 @@ Secondly, we profiled our customers' purchasing habits to optimize the advertisi
 Analysis of the feature vectors and clusters revealed four predominant purchasing profiles (Figure~\ref{fig:cluster_analysis}).  High frequencies of purchasing the same flavors repeatedly were tightly-correlated with high frequencies of purchasing the same brands -- these customers were likely to be happy with a particular item and kept purchasing the same item repeatedly.  For our advertising campaign, it would be unlikely to get these customers to purchase different items, so we should create incentives to purchase larger quantities, especially when inventory levels are high and needed to be depleted.  Other customers had a tendency to purchase either the same flavor or brand repeatedly, but varied in their choice of the other.  For customers who prefer a particular brand, we should target our advertising campaign to suggest other flavors sold by that brand.  Likewise, for customers who prefer a particular flavor, we should target our advertising campaign to suggest other brands with that flavor.  Lastly, some customers had very low frequencies of purchasing neither the same brand nor flavor.  Other factors, such as cost, not represented in this analysis may be driving these customers' purchasing habits and will need further study.
 
 \textcolor{red}{compare new and old}
-
-\subsection{Product Recommendations}
-
-\textcolor{red}{Need to see if we can evaluate by making vectors sparser}
-
-\subsection{Impact of Weather on Shopping Patterns by Region}
-
-\textcolor{red}{TODO: effect of weather, variations by region}
 
 \section{Discussion and Conclusion}
 The BigPetStore data generator is a domain-driven mathematical model and simulation for generating data with rich patterns.  We described several updates to the model designed to increase the number and variety of correlations.  By implementing a product enumerator, we increased the number of products and product fields, resulting in a significant increase in the number of possible purchasing profiles.  The addition of a model for local weather simulation enabled the incorporation of geospatial and additional temporal correlations.  A new JVM library implementation was described.  Support for parallelization and interopability with tools in the big data ecosystem was demonstrated using an Apache Spark driver.
