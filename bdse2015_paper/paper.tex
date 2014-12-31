@@ -430,39 +430,20 @@ Big data applications process large, dynamic, multidimensional data sets with th
 
 BigPetStore is one such big data application blueprint built around processing transaction data for a fictional chain of pet stores.  BigPetStore targets the Hadoop \cite{Hadoop} ecosystem with examples implemented for loading, cleaning, aggregating, and performing analytics on data using Hive \cite{Thusoo2010}, Pig \cite{Olston2008,Gates2009}, and Mahout \cite{Mahout}. BigPetStore has been incorporated into the open-source Apache BigTop distribution \cite{BigTop}, where it is used for testing and as a reference application. One of BigPetStore's key features is the ability to scale from a single machine to a large cluster, making it easy to develop projects on a local machine and transfer the application to a large cluster for production testing.
 
-To achieve the project's goals of providing high-quality, realistic examples, BigPetStore requires semantically-rich, complex data. At its core, BigPetStore relies on a generative data model for producing synthetic transaction data. Despite the growing number of real data sets now publically available, synthetic data generators have a number of advantages for BigPetStore over real data sets. The synthetic data generator can be packaged with BigPetStore, avoiding the cost, time, and infrastructure needed to host, transfer, and store large data sets. Synthetic data generators are scalable, allowing the user to choose how much data to generate -- a requirement for supporting BigPetStore's goal of running on both single machines and large clusters.  Licensing and privacy issues are avoided with the use of synthetic data sets. And lastly, the generated data can be customized by the user, allowing the user to generate data with specific criteria amenable to testing.  For example, a user may generate transactions from a small number of purchasable items so that clustering results can be easily visualized.
+To achieve the project's goals of providing high-quality, realistic examples, BigPetStore requires pattern-rich, complex data. At its core, BigPetStore relies on a generative data model for producing synthetic transaction data. Despite the growing number of real data sets now publically available, synthetic data generators have a number of advantages for BigPetStore over real data sets. The synthetic data generator can be packaged with BigPetStore, avoiding the cost, time, and infrastructure needed to host, transfer, and store large data sets. Synthetic data generators are scalable, allowing the user to choose how much data to generate -- a requirement for supporting BigPetStore's goal of running on both single machines and large clusters.  Licensing and privacy issues are avoided with the use of synthetic data sets. And lastly, the generated data can be customized by the user, allowing the user to generate data with specific criteria amenable to testing.  For example, a user may generate transactions from a small number of purchasable items so that clustering results can be easily visualized.
 
-% New tools such as Hive \cite{Thusoo2010}, Pig \cite{Olston2008,Gates2009}, and Shark \cite{Engle2012} based around big data frameworks such as Hadoop \cite{Hadoop}, Storm \cite{Storm}, and Spark \cite{Zaharia2010,Zaharia2012} are being released every day. Development, testing and benchmarking of big data software, algorithms, and infrastructure pose unique challenges.  Though software and algorithms will be deployed to large clusters for benchmarking and production usage, engineers develop and test these tools on desktops due to the speed and ease of development and debugging on a local machine and limited access to large clusters due to the high costs of purchasing, provisioning, and maintaining such clusters.  Software and algorithms are being developed at incredible speed with new releases everyday. The high speed of development driven by the need to be the first to market in a competitive field often results in buggy software.  There is great need for consistent and rigorous testing and benchmarking frameworks to aid in the identification of bugs while maintaining the high-speed of development.  Access to high-quality, semantically-rich data sets and complex, realistic analytics workflow examples that can scale from local development environments to large clusters are key to increasing access to and development of consistent and rigorous testing and benchmarking frameworks.
+A variety of approaches for generating synthetic data sets exist.  TeraGen and the Intel Hadoop Benchmark Suite \cite{Huang2010} are popular tools that can generate data sets quickly and at any scale, but the resulting data is semantically-void and not useful for much more than simple benchmarks.  Many frameworks \cite{Ghazal2013,Rabl2011a,Frank2012,Rabl2011,Gray1994,Bruno2005,Hoag2007,LogSynth,Alexandrov2012,Alexandrov2013,Arasu2011} for generating data that satisfy user-defined schemas exist.  Such frameworks allow for reproducing the time-indepenent, structural properties of real data, but the frameworks are not expressive enough to describe the dynamic generation processes and latent variables that would be needed to embed the desired informational complexity and rich patterns needed for BigPetStore's analytics examples. 
 
-%Over time, more high-quality data sets are becoming publicly available, but these data sets often carry burdens that force developers to make undesirable trade offs. Since few data sets are scalable (allowing the user to pick how much data they want), users are forced to choose between small data sets which are useful for development and testing on a local machine, but not for production-scale tests or benchmarking, or large data sets which are prohibitively expensive to host, transfer, and store. Furthermore, access to large data sets can be unreliable due to dependence on third party benefactors for hosting and requires significant amounts of bandwidth to download.  Several companies (such as Twitter\cite{Twitter}) offer access to their data but the costs and usage restrictions can be undesirable.
+Until such purely generic methods reach maturity, BigPetStore's needs are best met by a customized, domain-driven model.  In \cite{Nowling2014}, the authors described a new, domain-driven model combining the features of the TeraGen (scalability) and MovieLens \cite{MovieLens} (rich patterns) data sets for generating data. \emph{Ab initio} probabilistic models of stores and customers and stochastic dynamical models of purchasing customer behaviors parameterized by real data from the U.S. Census were used to generate data with geospatial and temporal patterns.  The approach was validated by analyzing geospatial patterns and customer purchasing preferences in data generated by Python prototype of the model.
 
-%Methods for generating synthetic data offer multiple advantages over pre-generated data sets.  The code for generating the data is often small, making it easy and cheap to host, transfer, and store. Licensing restrictions and data privacy issues are avoided with synthetic data sets.  And, the size of the data sets can be scaled arbitrarily, enabling seamless usage of the same data set across a range of situations.  
+Influenced by observations that weather patterns affect customers' daily shopping patterns \cite{Parsons2001} and retail sales \cite{Starr-McCluer2000}, we describe a new stochastic model for simulating local weather features such as temperature and precipitation and updates to the data generator model that incorporate the effects of weather on transaction times. With the addition of the weather model, generated data are now more realistic with geospatial and temporal patterns that vary by region and season.  
 
-A variety of approaches for generating synthetic data sets exist.  TeraGen and the Intel Hadoop Benchmark Suite \cite{Huang2010} are popular tools that can generate data sets quickly and at any scale, but the resulting data is semantically-void and not useful for much more than simple benchmarks.  Multiple frameworks exist for generating synthetic data sets that satisfy relational database schemas \cite{Ghazal2013,Rabl2011a,Frank2012,Rabl2011,Gray1994,Bruno2005,Hoag2007}, and several approaches even provide domain-specific languages \cite{LogSynth,Bruno2005,Hoag2007} for specifying additional constraints (such as which distributions to sample from and allow for modeling basic relationships between fields using simple arithmetic equations \cite{Alexandrov2012}).
-
-Recent work has addressed some aspects of the need for more dynamic data set generation: Arasu, et al. \cite{Arasu2011} demonstrated that constraint-solving techniques could be used as an alternative to procedural approaches. Such frameworks allow for reproducing the structural properties of real data, but the frameworks are not expressive enough to describe the dynamic generation processes and latent variables that would be needed to embed the desired informational complexity and rich semantics needed for BigPetStore's analytics examples.
-
-Realizing the difficulty in creating a generic framework capable of modeling the semantics of real data, recent work\cite{Alexandrov2013} has focused on generating synthetic data sets that satisfy characteristics learned from real reference data. Such approaches appear promising but will need to overcome the difficulties of accurately training models, especially on raw data instead of features.
-
-Until such purely generic methods reach maturity, BigPetStore's needs are best met by a customized, domain-driven model. Another example of such a model is The Information Discovery and Analysis System (IDAS) Data Set Generator (IDSG) \cite{Jeske2005,Lin2006}. IDSG was developed to test the effectiveness of IDASs in identifying potential terrorism threat scenarios using synthetic data.  Like BigPetStore, the developers of IDSG needed to avoid licensing restrictions and privacy issues associated with real data.
-
-%\textcolor{red}{Huppler, Pavlo}.  \textcolor{red}{standard benchmarks}
-
-%The BigPetStore application aims to be a big data application blueprint built around a fictional chain of pet stores, which incorporates a data generator and complex examples of cleaning, aggregation, and analytics using well-known tools such as Hive and Mahout \cite{Mahout} from across the Hadoop and Spark ecosystems. BigPetStore's usefulness has been demonstrated by its incorporation into the open-source Apache BigTop distribution \cite{BigTop} for testing and as a reference application.
-
-BigPetStore's current model has been used successfully to generate terabytes of synthetic data and is used regularly for testing in Apache BigTop, showcasing the value of the approach.  The current model is limited, however, in its ability to generate data that is semantically rich, limiting progress on BigPetStore's goals of providing realistic analytics examples.
-
-In this work, we present a new domain-driven model and simulation method for BigPetStore.  Compared with BigPetStore's previous data generator, our model and implementation can generate data which contains geospatial, temporal, and quantitative features, similar to the type of data which businesses and organizations might typically encounter.  Combining the features of the TeraGen (scalability)  and MovieLens \cite{MovieLens} (semantically rich) input data sets commonly used for big data benchmarking, we present a synthetic data set generator which can be used to benchmark lower level tasks (such as sorting) as well as higher level tasks (such as clustering, recommending, and search indexing) at arbitrary scale.  To demonstrate that the model generates data with desirable properties, we performed an example analysis designed to guide a fictional advertising campaign (a typical business use case). The model's implementation was made available as open source software.
-
-%Models for synthetic data generation is not the only approach for obtaining data sets. 
-%can randomly generate numerical data at any scale, but the data is semantically void and has very little meaning.  Thus, TeraGen cannot be used to test any application other than a simplistic sort program.  The Intel Hadoop Benchmark suite include several generative data models such as data for computing the PageRank of web sites for their benchmarks. The models are specific to each benchmark, however, and not useful for general-purpose development and testing.
-
-%Given that the driving motivation behind so much of the investment in big data software solutions is ``to derive insight from data,'' there is thus an obvious, gaping hole in the existing ecosystem: We need a tool that generates meaningful data which contains informational complexity that can be used to derive global patterns in a data set, which can be used to scalably and reliably generate large data sets on the fly - so that we can use it for benchmarking, comparison, and demonstration of the different algorithmic approaches to mining large data sets.
+Additionally, a new Java library implementation of the data generator is described.  Compatibility with existing, JVM-based big data tools and support for parallelization are demonstrated through an Apache Spark \cite{Zaharia2010, Zaharia2012} driver for the library.  The implementation is available under the Apache Public License v2.
 
 \section{Overview of Previous Model}
 Our generative model combines various well-known mathematical modeling techniques to simulate the factors affecting customers' purchasing habits.  Each part of the model is derived from \emph{ab initio} assumptions.  In several cases, real data is used to parameterize parts of the model. We described the initial version of the model in \cite{Nowling2014}, which we summarize here.
 
-The model generates data for four types of records: stores, customers, transactions, and transaction items (Figure~\ref{fig:relational-data-model}).  Store records contain both a unique identifier and a location in the form of a 5-digit zip code. Customer records consist of a unique identifier, a name, and a location given as a 5-digit zip code. Transaction records consist of a transaction identifier, a customer identifier, a store identifier, and a time given in days since the beginning of the simulation. Transaction item records contain a transaction identifier and an item description.  The item description is a list of key-value pairs stored as a string.  Key-value pairs are used since item characteristics differ depending on the type of item.  For example, dog food has a brand, a flavor, a size (in lbs), and a per-unit cost, while poop bags have a brand, a color, a count, and a per-unit cost.
+The model generates data four types of records: stores, customers, transactions, and transaction items (Figure~\ref{fig:relational-data-model}).  Store records contain both a unique identifier and a location in the form of a 5-digit zip code. Customer records consist of a unique identifier, a name, and a location given as a 5-digit zip code. Transaction records consist of a transaction identifier, a customer identifier, a store identifier, and a time given in days since the beginning of the simulation. Transaction item records contain a transaction identifier and an item description.  The item description is a list of key-value pairs stored as a string.  Key-value pairs are used since item characteristics differ depending on the type of item.  For example, dog food has a brand, a flavor, a size (in lbs), and a per-unit cost, while poop bags have a brand, a color, a count, and a per-unit cost.
 
 \begin{figure}[!t]
   \centering
@@ -503,19 +484,19 @@ Once a product has been chosen, the customer's inventory is updated and the exha
 %  \label{fig:purchases_sim}
 %\end{figure}
 
-\begin{figure}[!t]
-  \centering
-  \includegraphics[width=3in]{figures/dog_food_markov_model.eps}
-  \caption{Example Markov Model for Dog Food}
-  \label{fig:dog_food_markov_model}
-\end{figure}
+%\begin{figure}[!t]
+%  \centering
+%  \includegraphics[width=3in]{figures/dog_food_markov_model.eps}
+%  \caption{Example Markov Model for Dog Food}
+%  \label{fig:dog_food_markov_model}
+%\end{figure}
 
-\begin{figure}[!t]
-  \centering
-  \includegraphics[width=3.5in]{figures/item_usage_simulation.pdf}
-  \caption{Example Product Usage Simulation}
-  \label{fig:product_usage_sim}
-\end{figure}
+%\begin{figure}[!t]
+%  \centering
+%  \includegraphics[width=3.5in]{figures/item_usage_simulation.pdf}
+%  \caption{Example Product Usage Simulation}
+%  \label{fig:product_usage_sim}
+%\end{figure}
 
 
 \section{Improvements to the Data Generator}
@@ -545,7 +526,7 @@ where $\lambda$ is the inverse of the desired average distance.
 
 \textcolor{red}{TODO why?}
 
-Weather data is generated using a local weather model -- i.e., weather is not explicitly correlated between regions -- so that each region can be simulated independently for computational efficiency.  The model was derived and evaluated by comparing to local weather data downloaded from the NOAA QCLCD \textcolor{red}{cite}.  The goal of the model was not to accurately predict day-to-day weather patterns but to reproduce temporal and static statistical properties.  The model is similar other models available in the literature \textcolor{red}{cite}.
+Weather data is generated using a local weather model -- i.e., weather is not explicitly correlated between regions -- so that each region can be simulated independently for computational efficiency.  The model was derived and evaluated by comparing to local weather data downloaded from the NOAA QCLCD \textcolor{red}{cite}.  The goal of the model was not to accurately predict day-to-day weather patterns but to reproduce temporal and static statistical properties.  The model is similar in concept to other models \cite{Racsko1991,Chen2010,Birt2010,Fatichi2011} available in the literature.
 
 The models were derived for daily average temperatures ($T(t)$, $^\circ$F), daily total precipitation ($P(t)$, in), and daily average wind speed ($V(t)$, mph). The temperature for each location is modeled as a first-order Fourier series plus noise generated by an Ornstein-Uhlenbeck process $Z(t)$ \cite{Gardiner09}:
 
@@ -604,7 +585,7 @@ The library's API is relatively simple with one class for loading input data, fi
 \begin{figure}[!t]
   \centering
   \includegraphics[width=3.5in]{figures/bps_flowchart.eps}
-  \caption{BigPetStore Flowchart}
+  \caption{BigPetStore Flowchart. Ovals represent input data, rectangles represent data generators, and diamonds represent generated data.}
   \label{fig:bps_flowchart}
 \end{figure}
 
@@ -670,22 +651,22 @@ The weekly transaction counts over five years of simulation for six stores are p
 
 \textcolor{red}{TODO: effect of weather, variations by region}
 
-\subsection{Customer Segmentation}
-Secondly, we profiled our customers' purchasing habits to optimize the advertising campaign's effectiveness by customizing the advertised products for each customer.  For each customer, we generated a feature vector by computing the frequency with which they would purchase the same brand or flavor from one transaction to the next.  We clustered the customers' feature vectors using the KMeans algorithm with a range of cluster counts. Twenty clusters converged the error.
+%\subsection{Customer Segmentation}
+%Secondly, we profiled our customers' purchasing habits to optimize the advertising campaign's effectiveness by customizing the advertised products for each customer.  For each customer, we generated a feature vector by computing the frequency with which they would purchase the same brand or flavor from one transaction to the next.  We clustered the customers' feature vectors using the KMeans algorithm with a range of cluster counts. Twenty clusters converged the error.
 
-\begin{figure}[!t]
-  \centering
-  \includegraphics[width=3.5in]{figures/cluster_analysis.eps}
-  \caption{Clustering of Brand and Flavor Purchasing Preferences. Grey plus signs (+) represent customer data points, and cyan circles represent cluster centers.}
-  \label{fig:cluster_analysis}
-\end{figure}
+%\begin{figure}[!t]
+%  \centering
+%  \includegraphics[width=3.5in]{figures/cluster_analysis.eps}
+%  \caption{Clustering of Brand and Flavor Purchasing Preferences. Grey plus signs (+) represent customer data points, and cyan circles represent cluster centers.}
+%  \label{fig:cluster_analysis}
+%\end{figure}
 
-Analysis of the feature vectors and clusters revealed four predominant purchasing profiles (Figure~\ref{fig:cluster_analysis}).  High frequencies of purchasing the same flavors repeatedly were tightly-correlated with high frequencies of purchasing the same brands -- these customers were likely to be happy with a particular item and kept purchasing the same item repeatedly.  For our advertising campaign, it would be unlikely to get these customers to purchase different items, so we should create incentives to purchase larger quantities, especially when inventory levels are high and needed to be depleted.  Other customers had a tendency to purchase either the same flavor or brand repeatedly, but varied in their choice of the other.  For customers who prefer a particular brand, we should target our advertising campaign to suggest other flavors sold by that brand.  Likewise, for customers who prefer a particular flavor, we should target our advertising campaign to suggest other brands with that flavor.  Lastly, some customers had very low frequencies of purchasing neither the same brand nor flavor.  Other factors, such as cost, not represented in this analysis may be driving these customers' purchasing habits and will need further study.
+%Analysis of the feature vectors and clusters revealed four predominant purchasing profiles (Figure~\ref{fig:cluster_analysis}).  High frequencies of purchasing the same flavors repeatedly were tightly-correlated with high frequencies of purchasing the same brands -- these customers were likely to be happy with a particular item and kept purchasing the same item repeatedly.  For our advertising campaign, it would be unlikely to get these customers to purchase different items, so we should create incentives to purchase larger quantities, especially when inventory levels are high and needed to be depleted.  Other customers had a tendency to purchase either the same flavor or brand repeatedly, but varied in their choice of the other.  For customers who prefer a particular brand, we should target our advertising campaign to suggest other flavors sold by that brand.  Likewise, for customers who prefer a particular flavor, we should target our advertising campaign to suggest other brands with that flavor.  Lastly, some customers had very low frequencies of purchasing neither the same brand nor flavor.  Other factors, such as cost, not represented in this analysis may be driving these customers' purchasing habits and will need further study.
 
-\textcolor{red}{compare new and old}
+%\textcolor{red}{compare new and old}
 
 \section{Discussion and Conclusion}
-The BigPetStore data generator is a domain-driven mathematical model and simulation for generating data with rich patterns.  We described several updates to the model designed to increase the number and variety of correlations.  By implementing a product enumerator, we increased the number of products and product fields, resulting in a significant increase in the number of possible purchasing profiles.  The addition of a model for local weather simulation enabled the incorporation of geospatial and additional temporal correlations.  A new JVM library implementation was described.  Support for parallelization and interopability with tools in the big data ecosystem was demonstrated using an Apache Spark driver.
+The BigPetStore data generator is a domain-driven mathematical model and simulation for generating data with rich patterns.  A new model for local weather simulation which enabled the incorporation of additional geospatial and temporal correlations was described. A new JVM library implementation was described.  Support for parallelization and interopability with tools in the big data ecosystem was demonstrated using an Apache Spark driver.
 
 \textcolor{red}{The math model was validated using ...}
 
