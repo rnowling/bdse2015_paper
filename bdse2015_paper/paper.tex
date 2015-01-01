@@ -602,7 +602,7 @@ P(\text{trans}_{t_i}&=\text{YES}|t_{i-1}, S_{d_i}, WC_{d_i}) = \nonumber \\
 &Z^{-1} P(\text{trans}_{t_i}=\text{YES}|t_{i-1}) P(\text{trans}_{d_i}=\text{YES} | S_{d_i}, WC_{d_i})
 \end{align}
  
-where $Z$ is the normalization factor.  
+where $Z$ is the normalization factor and $d_i$ = $\left \lfloor{t_i} \right \rfloor$.  
 
 
 
@@ -812,7 +812,9 @@ We intend to expand the model to incorporate additional factors.  Deeper integra
 
 % use section* for acknowledgement
 \section*{Acknowledgment}
-The authors would like to thank Brian P. Clare and Casey Robinson for useful and interesting discussion.  Will Benton, Trevor M. Cickovski, Erik Erlandson, Scott A. Hale, Hank Jakiela, Casey Robinson, and Douglas Thain provided invaluable feedback on the manuscript.  JV would like to thank the Apache BigTop community for their interest in and support of BigPetStore.  The authors would also like to thank Matt Fenwick, Nigel Savage, and Bhashit Parikh for their contributions to BigPetStore. The authors would like to thank Red Hat, Inc. and the University of Notre Dame for their support of this work.
+The authors would like to think Red Hat, Inc. and the Apache BigTop commmunity for their support and encouragement of this work.  Marissa K. D. McCabe offered insightful commentary on the effect of weather on customers' shopping habits.  
+
+%The authors would like to thank Brian P. Clare and Casey Robinson for useful and interesting discussion.  Will Benton, Trevor M. Cickovski, Erik Erlandson, Scott A. Hale, Hank Jakiela, Casey Robinson, and Douglas Thain provided invaluable feedback on the manuscript.  JV would like to thank the Apache BigTop community for their interest in and support of BigPetStore.  The authors would also like to thank Matt Fenwick, Nigel Savage, and Bhashit Parikh for their contributions to BigPetStore. The authors would like to thank Red Hat, Inc. and the University of Notre Dame for their support of this work.
 
 
 
